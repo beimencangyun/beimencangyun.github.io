@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DOOM 2025</title>
+    <style>
+        canvas { background: #000; }
+        #hud { position: absolute; top: 10px; left: 10px; color: #FF0; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <div id="hud">HEALTH:100 SCORE:0</div>
+    <canvas id="game" width="640" height="480"></canvas>
+
+<script>
+(function() {
+    const FPS = 60;
+    const CELL_SIZE = 64;
+    const map = [
+        [1,1,1,1,1],
+        [1,0,0,2,1],
+        [1,0,1,0,1],
+        [1,0,0,0,1],
+        [1,1,1,1,1]
+    ];
+    
+    const ctx = document.getElementById('game').getContext('2d');
+    let player = {
+        x: CELL_SIZE * 1.5,
+        y: CELL_SIZE * 1.5,
+        angle: 0,
+        fov: 60,
+        health: 100,
+        score: 0
+    };
+    
+    let enemies = [{ 
+        x: CELL_SIZE * 3.5, 
+        y: CELL_SIZE * 1.5,
+        health: 100,
+        active: true 
+    }];
+
+    // 严格类型校验函数
+    const validate = (obj, schema) => {
+        for (const key in schema) {
+            if (typeof obj[key] !== schema[key]) 
+                throw new Error(`Invalid type for ${key}`);
+        }
+    };
+
+    // 碰撞检测
+    const checkCollision = (x, y) => {
+        const gridX = Math.floor(x / CELL_SIZE);
+        const gridY = Math.floor(y / CELL_SIZE);
+        return map[gridY]?.[gridX] === 1;
+    };
+
+    // 射线投射算法
+    const castRay = (angle) => {
+        const rayDir = {
+            x: Math.cos(angle),
+            y: Math.sin(angle)
+        };
+        
+        let dist = 0;
+        while (dist < 20 * CELL_SIZE) {
+            dist += 2;
+            const testX = player.x + rayDir.x * dist;
+            const testY = player.y + rayDir.y * dist;
+            
+            if (checkCollision(testX, testY)) {
+                // 计算墙面高度
+                const correction = 1 / (dist * Math.cos(angle - player.angle));
+                return Math.min(480, 8000 * correction);
+            }
+            
+            // 敌人碰撞检测
+            enemies.forEach(enemy => {
+                if (!enemy.active) return;
+                const dx = testX - enemy.x;
+                const dy = testY - enemy.y;
+                if (Math.sqrt(dx*dx + dy*dy) < CELL_SIZE/2) {
+                    enemy.health -= 34;
+                    if (enemy.health <= 0) {
+                        enemy.active = false;
+                        player.score += 100;
+                    }
+                }
+            });
+        }
+        return 0;
+    };
+
+    // 游戏渲染
+    const render = () => {
+        ctx.fillStyle = '#223';
+        ctx.fillRect(0, 0, 640, 240);
+        ctx.fillStyle = '#332';
+        ctx.fillRect(0, 240, 640, 240);
+        
+        // 投射光线
+        for (let i = 0; i < player.fov; i++) {
+            const angle = player.angle - player.fov/2 + i;
+            const wallHeight = castRay(angle * Math.PI/180);
+            if (wallHeight > 0) {
+                ctx.fillStyle = `hsl(${i*2}, 70%, 50%)`;
+                ctx.fillRect(i*10.66, 240 - wallHeight/2, 11, wallHeight);
+            }
+        }
+        
+        // 更新HUD
+        document.getElementById('hud').textContent = 
+            `HEALTH:${player.health} SCORE:${player.score}`;
+    };
+
+    // 游戏逻辑更新
+    const update = () => {
+        enemies.forEach(enemy => {
+            if (!enemy.active) return;
+            const dx = player.x - enemy.x;
+            const dy = player.y - enemy.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            
+            if (dist < CELL_SIZE) {
+                player.health -= 0.2;
+            }
+            
+            enemy.x += dx / dist;
+            enemy.y += dy / dist;
+        });
+    };
+
+    // 输入处理
+    document.addEventListener('keydown', (e) => {
+        const moveSpeed = 3;
+        const rotSpeed = 3;
+        const cos = Math.cos(player.angle * Math.PI/180);
+        const sin = Math.sin(player.angle * Math.PI/180);
+        
+        switch(e.key) {
+            case 'ArrowUp':
+                if (!checkCollision(player.x + cos*moveSpeed, player.y + sin*moveSpeed)) {
+                    player.x += cos * moveSpeed;
+                    player.y += sin * moveSpeed;
+                }
+                break;
+            case 'ArrowDown':
+                if (!checkCollision(player.x - cos*moveSpeed, player.y - sin*moveSpeed)) {
+                    player.x -= cos * moveSpeed;
+                    player.y -= sin * moveSpeed;
+                }
+                break;
+            case 'ArrowLeft': 
+                player.angle = (player.angle - rotSpeed) % 360;
+                break;
+            case 'ArrowRight': 
+                player.angle = (player.angle + rotSpeed) % 360;
+                break;
+        }
+    });
+
+    // 游戏循环（严格帧率控制）
+    let last = performance.now();
+    const loop = () => {
+        const now = performance.now();
+        if (now - last >= 1000/FPS) {
+            try {
+                validate(player, { x: 'number', y: 'number', angle: 'number' });
+                update();
+                render();
+                last = now;
+            } catch(err) {
+                console.error('Game crash prevented:', err);
+            }
+        }
+        requestAnimationFrame(loop);
+    };
+    
+    // 初始化校验
+    try {
+        validate(player, { x: 'number', y: 'number', angle: 'number' });
+        loop();
+    } catch(err) {
+        alert('初始化失败: ' + err.message);
+    }
+})();
+</script>
+</body>
+</html>
