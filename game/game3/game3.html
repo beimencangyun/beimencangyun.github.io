@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>双人网球游戏|beimencangyun.github.io</title>
+    <style>
+        canvas {
+            border: 2px solid #000;
+            background: #eee;
+        }
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="gameCanvas" width="800" height="400"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // 游戏对象
+        const game = {
+            paddleHeight: 80,
+            paddleWidth: 10,
+            ballSize: 10,
+            leftScore: 0,
+            rightScore: 0,
+            
+            leftPaddle: {
+                y: canvas.height/2 - 40
+            },
+            
+            rightPaddle: {
+                y: canvas.height/2 - 40
+            },
+            
+            ball: {
+                x: canvas.width/2,
+                y: canvas.height/2,
+                speedX: 5,
+                speedY: 5
+            }
+        };
+
+        // 控制状态
+        const keys = {
+            w: false,
+            s: false,
+            ArrowUp: false,
+            ArrowDown: false
+        };
+
+        // 事件监听
+        document.addEventListener('keydown', (e) => {
+            if (e.key in keys) keys[e.key] = true;
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            if (e.key in keys) keys[e.key] = false;
+        });
+
+        // 更新游戏状态
+        function update() {
+            // 移动左边球拍
+            if (keys.w && game.leftPaddle.y > 0) {
+                game.leftPaddle.y -= 7;
+            }
+            if (keys.s && game.leftPaddle.y < canvas.height - game.paddleHeight) {
+                game.leftPaddle.y += 7;
+            }
+
+            // 移动右边球拍
+            if (keys.ArrowUp && game.rightPaddle.y > 0) {
+                game.rightPaddle.y -= 7;
+            }
+            if (keys.ArrowDown && game.rightPaddle.y < canvas.height - game.paddleHeight) {
+                game.rightPaddle.y += 7;
+            }
+
+            // 更新球的位置
+            game.ball.x += game.ball.speedX;
+            game.ball.y += game.ball.speedY;
+
+            // 上下边界碰撞
+            if (game.ball.y < 0 || game.ball.y > canvas.height) {
+                game.ball.speedY = -game.ball.speedY;
+            }
+
+            // 球拍碰撞检测
+            if (
+                // 左边球拍
+                game.ball.x < game.paddleWidth &&
+                game.ball.y > game.leftPaddle.y &&
+                game.ball.y < game.leftPaddle.y + game.paddleHeight
+            ) {
+                game.ball.speedX = -game.ball.speedX;
+            }
+
+            if (
+                // 右边球拍
+                game.ball.x > canvas.width - game.paddleWidth &&
+                game.ball.y > game.rightPaddle.y &&
+                game.ball.y < game.rightPaddle.y + game.paddleHeight
+            ) {
+                game.ball.speedX = -game.ball.speedX;
+            }
+
+            // 得分检测
+            if (game.ball.x < 0) {
+                game.rightScore++;
+                resetBall();
+            }
+            if (game.ball.x > canvas.width) {
+                game.leftScore++;
+                resetBall();
+            }
+        }
+
+        // 重置球的位置
+        function resetBall() {
+            game.ball.x = canvas.width/2;
+            game.ball.y = canvas.height/2;
+            game.ball.speedX = -game.ball.speedX;
+            game.ball.speedY = Math.random() * 10 - 5;
+        }
+
+        // 绘制游戏元素
+        function draw() {
+            // 清空画布
+            ctx.fillStyle = '#eee';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // 绘制球拍
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, game.leftPaddle.y, game.paddleWidth, game.paddleHeight);
+            ctx.fillRect(canvas.width - game.paddleWidth, game.rightPaddle.y, 
+                        game.paddleWidth, game.paddleHeight);
+
+            // 绘制球
+            ctx.beginPath();
+            ctx.arc(game.ball.x, game.ball.y, game.ballSize, 0, Math.PI*2);
+            ctx.fillStyle = 'red';
+            ctx.fill();
+            ctx.closePath();
+
+            // 绘制分数
+            ctx.font = '30px Arial';
+            ctx.fillText(game.leftScore, canvas.width/4, 50);
+            ctx.fillText(game.rightScore, canvas.width*3/4, 50);
+        }
+
+        // 游戏循环
+        function gameLoop() {
+            update();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        // 开始游戏
+        gameLoop();
+    </script>
+</body>
+</html>
