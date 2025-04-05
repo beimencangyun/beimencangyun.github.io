@@ -1,0 +1,6 @@
+Game_name:千差*万别;
+Game_key:11915dae004c389;
+Title_img:2.jpg;
+Title_bgm:予感.mp3;
+Textbox_theme:imss;
+Game_Logo:;
