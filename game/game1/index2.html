@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8"/>
+  <link rel="icon" type="image/x-icon" href="./icons/favicon.ico" />
+  <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png">
+  <link rel="manifest" href="./manifest.json" />
+  <title>WebGAL</title>
+  <style>
+    /* 新增加载界面样式 */
+    .loader-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #f8f9fa;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      transition: opacity 0.5s;
+    }
+
+    .loading-text {
+      margin: 10px 0;
+      font-size: 1.2em;
+      color: #495057;
+    }
+
+    .progress-container {
+      width: 200px;
+      height: 4px;
+      background: #e9ecef;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      background: #4dabf7;
+      transition: width 0.3s ease-out;
+    }
+
+    .resource-list {
+      width: 300px;
+      height: 120px;
+      overflow-y: auto;
+      margin: 15px 0;
+      font-size: 0.9em;
+      color: #868e96;
+    }
+
+    .resource-item {
+      padding: 4px 0;
+      display: flex;
+      align-items: center;
+    }
+
+    .resource-item::before {
+      content: '•';
+      color: #4dabf7;
+      margin-right: 8px;
+    }
+
+    .resource-item.loaded::before {
+      color: #40c057;
+    }
+
+    /* 调整原有内容容器 */
+    #original-content {
+      display: none;
+      opacity: 0;
+      transition: opacity 0.5s;
+    }
+  </style>
+  <script type="module" crossorigin src="./assets/index-41daed13.js"></script>
+  <link rel="stylesheet" href="./assets/index-8fb46df7.css">
+</head>
+
+<body>
+  <!-- 新增加载界面 -->
+  <div class="loader-container" id="loader">
+    <div class="loading-text">资源加载中...</div>
+    <div class="resource-list" id="resourceList"></div>
+    <div class="progress-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+  </div>
+
+  <!-- 原有内容包裹在新的容器中 -->
+  <div id="original-content">
+    <!--快速显示落地页，让用户感知不到加载的过程-->
+    <div id="ebg"></div>
+    <!-- 保持原有结构不变 -->
+    <div id="Title_enter_page" onclick="enter()" style="...">
+      <!-- 原有内容保持不变 -->
+    </div>
+    <div id="panic-overlay"></div>
+    <div id="root"></div>
+  </div>
+
+  <script>
+    // 新增资源追踪逻辑
+    class ResourceTracker {
+      constructor() {
+        this.resources = new Set();
+        this.loadedResources = new Set();
+        this.listElement = document.getElementById('resourceList');
+      }
+
+      startTracking() {
+        this.scanDOM();
+        this.setupResourceListeners();
+        setInterval(() => this.updateDisplay(), 500);
+      }
+
+      scanDOM() {
+        ['img', 'script', 'link'].forEach(tag => {
+          document.querySelectorAll(tag).forEach(el => this.addResource(el));
+        });
+      }
+
+      addResource(element) {
+        const src = element.src || element.href;
+        if (src && !this.resources.has(src)) {
+          this.resources.add(src);
+          this.trackLoading(element);
+        }
+      }
+
+      trackLoading(element) {
+        if (element.complete) {
+          this.loadedResources.add(element.src || element.href);
+          return;
+        }
+
+        element.addEventListener('load', () => {
+          this.loadedResources.add(element.src || element.href);
+        });
+        element.addEventListener('error', () => {
+          this.loadedResources.add(element.src || element.href);
+        });
+      }
+
+      updateDisplay() {
+        const fragment = document.createDocumentFragment();
+        this.resources.forEach(src => {
+          const item = document.createElement('div');
+          item.className = `resource-item ${this.loadedResources.has(src) ? 'loaded' : ''}`;
+          item.textContent = this.getFileName(src);
+          fragment.appendChild(item);
+        });
+        this.listElement.innerHTML = '';
+        this.listElement.appendChild(fragment);
+      }
+
+      getFileName(src) {
+        return src.split('/').pop().split('?')[0];
+      }
+    }
+
+    // 初始化加载逻辑
+    const tracker = new ResourceTracker();
+    tracker.startTracking();
+
+    // 修改原有加载逻辑
+    const progress = {
+      bar: document.getElementById('progressBar'),
+      current: 0,
+      target: 0,
+      simulateSpeed: 2,
+      updateInterval: 50
+    };
+
+    const progressTimer = setInterval(() => {
+      if (progress.target < 80) {
+        progress.target += (80 - progress.target) * 0.15;
+        progress.bar.style.width = progress.target + '%';
+      }
+    }, progress.updateInterval);
+
+    window.addEventListener('load', () => {
+      progress.target = 100;
+      progress.bar.style.width = '100%';
+      clearInterval(progressTimer);
+
+      setTimeout(() => {
+        const loader = document.getElementById('loader');
+        const content = document.getElementById('original-content');
+        
+        loader.style.opacity = '0';
+        loader.addEventListener('transitionend', () => {
+          loader.style.display = 'none';
+          content.style.display = 'block';
+          content.style.opacity = '1';
+          
+          // 触发原有resize逻辑
+          setTimeout(resize, 100);
+        }, { once: true });
+      }, 500);
+    });
+
+    // 保持原有脚本不变
+    // ... [保留原有所有脚本内容] ...
+  </script>
+</body>
+</html>
