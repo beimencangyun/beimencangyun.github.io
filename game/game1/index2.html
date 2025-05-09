@@ -7,204 +7,147 @@
   <link rel="manifest" href="./manifest.json" />
   <title>WebGAL</title>
   <style>
-    /* 新增加载界面样式 */
-    .loader-container {
+    /* 新增加载页面样式 */
+    #loading-page {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: #f8f9fa;
+      background: #fff;
+      z-index: 9999;
       display: flex;
       flex-direction: column;
       justify-content: center;
       align-items: center;
-      z-index: 9999;
       transition: opacity 0.5s;
     }
 
-    .loading-text {
-      margin: 10px 0;
-      font-size: 1.2em;
-      color: #495057;
+    #progress-container {
+      width: 60%;
+      max-width: 400px;
+      height: 20px;
+      background: #eee;
+      border-radius: 10px;
+      margin: 20px 0;
     }
 
-    .progress-container {
-      width: 200px;
-      height: 4px;
-      background: #e9ecef;
-      border-radius: 2px;
-      overflow: hidden;
-    }
-
-    .progress-bar {
+    #progress-bar {
       width: 0%;
       height: 100%;
-      background: #4dabf7;
-      transition: width 0.3s ease-out;
+      background: linear-gradient(90deg, #a1c4fd 0%, #c2e9fb 100%);
+      border-radius: 10px;
+      transition: width 0.3s ease;
     }
 
-    .resource-list {
-      width: 300px;
-      height: 120px;
-      overflow-y: auto;
-      margin: 15px 0;
-      font-size: 0.9em;
-      color: #868e96;
-    }
-
-    .resource-item {
-      padding: 4px 0;
-      display: flex;
-      align-items: center;
-    }
-
-    .resource-item::before {
-      content: '•';
-      color: #4dabf7;
-      margin-right: 8px;
-    }
-
-    .resource-item.loaded::before {
-      color: #40c057;
-    }
-
-    /* 调整原有内容容器 */
-    #original-content {
-      display: none;
-      opacity: 0;
-      transition: opacity 0.5s;
+    #loading-info {
+      text-align: center;
+      font-family: '思源宋体', Georgia, serif;
+      color: #333;
     }
   </style>
-  <script type="module" crossorigin src="./assets/index-41daed13.js"></script>
-  <link rel="stylesheet" href="./assets/index-8fb46df7.css">
 </head>
 
 <body>
-  <!-- 新增加载界面 -->
-  <div class="loader-container" id="loader">
-    <div class="loading-text">资源加载中...</div>
-    <div class="resource-list" id="resourceList"></div>
-    <div class="progress-container">
-      <div class="progress-bar" id="progressBar"></div>
+  <!-- 新增加载页面 -->
+  <div id="loading-page">
+    <h2>网页正在加载中...</h2>
+    <div id="progress-container">
+      <div id="progress-bar"></div>
+    </div>
+    <div id="loading-info">
+      <div id="current-resource"></div>
+      <div id="progress-text">0%</div>
     </div>
   </div>
 
-  <!-- 原有内容包裹在新的容器中 -->
-  <div id="original-content">
-    <!--快速显示落地页，让用户感知不到加载的过程-->
-    <div id="ebg"></div>
-    <!-- 保持原有结构不变 -->
-    <div id="Title_enter_page" onclick="enter()" style="...">
-      <!-- 原有内容保持不变 -->
-    </div>
-    <div id="panic-overlay"></div>
-    <div id="root"></div>
+  <!-- 原有页面结构 -->
+  <div id="ebg"></div>
+  <div id="Title_enter_page" onclick="enter()" style="...">
+    <!-- ...原有内容... -->
   </div>
+  <div id="panic-overlay"></div>
+  <div id="root"></div>
 
   <script>
-    // 新增资源追踪逻辑
-    class ResourceTracker {
-      constructor() {
-        this.resources = new Set();
-        this.loadedResources = new Set();
-        this.listElement = document.getElementById('resourceList');
-      }
+    // 资源加载追踪器
+    (function() {
+      const resources = [];
+      const elements = document.querySelectorAll('link, script, img');
+      let loadedCount = 0;
 
-      startTracking() {
-        this.scanDOM();
-        this.setupResourceListeners();
-        setInterval(() => this.updateDisplay(), 500);
-      }
+      // 获取初始资源
+      elements.forEach(el => {
+        if (el.href || el.src) {
+          resources.push({
+            element: el,
+            url: el.href || el.src,
+            loaded: false
+          });
+        }
+      });
 
-      scanDOM() {
-        ['img', 'script', 'link'].forEach(tag => {
-          document.querySelectorAll(tag).forEach(el => this.addResource(el));
+      // 监听动态添加的资源
+      const observer = new MutationObserver(mutations => {
+        mutations.forEach(mutation => {
+          mutation.addedNodes.forEach(node => {
+            if (node.nodeName === 'SCRIPT' || node.nodeName === 'LINK' || node.nodeName === 'IMG') {
+              const url = node.src || node.href;
+              if (url) {
+                resources.push({
+                  element: node,
+                  url: url,
+                  loaded: false
+                });
+                trackLoading(node);
+              }
+            }
+          });
         });
-      }
+      });
 
-      addResource(element) {
-        const src = element.src || element.href;
-        if (src && !this.resources.has(src)) {
-          this.resources.add(src);
-          this.trackLoading(element);
+      observer.observe(document.documentElement, {
+        childList: true,
+        subtree: true
+      });
+
+      // 更新进度
+      function updateProgress() {
+        loadedCount++;
+        const progress = Math.round((loadedCount / resources.length) * 100);
+        document.getElementById('progress-bar').style.width = progress + '%';
+        document.getElementById('progress-text').textContent = progress + '%';
+
+        if (loadedCount === resources.length) {
+          document.getElementById('loading-page').style.opacity = '0';
+          setTimeout(() => {
+            document.getElementById('loading-page').style.display = 'none';
+          }, 500);
         }
       }
 
-      trackLoading(element) {
-        if (element.complete) {
-          this.loadedResources.add(element.src || element.href);
-          return;
-        }
-
-        element.addEventListener('load', () => {
-          this.loadedResources.add(element.src || element.href);
+      // 追踪资源加载
+      function trackLoading(el) {
+        el.addEventListener('load', () => {
+          document.getElementById('current-resource').textContent = 
+            '正在加载: ' + (el.src || el.href).split('/').pop();
+          updateProgress();
         });
-        element.addEventListener('error', () => {
-          this.loadedResources.add(element.src || element.href);
+        el.addEventListener('error', () => {
+          console.error('加载失败:', el.src || el.href);
+          updateProgress();
         });
       }
 
-      updateDisplay() {
-        const fragment = document.createDocumentFragment();
-        this.resources.forEach(src => {
-          const item = document.createElement('div');
-          item.className = `resource-item ${this.loadedResources.has(src) ? 'loaded' : ''}`;
-          item.textContent = this.getFileName(src);
-          fragment.appendChild(item);
-        });
-        this.listElement.innerHTML = '';
-        this.listElement.appendChild(fragment);
-      }
-
-      getFileName(src) {
-        return src.split('/').pop().split('?')[0];
-      }
-    }
-
-    // 初始化加载逻辑
-    const tracker = new ResourceTracker();
-    tracker.startTracking();
-
-    // 修改原有加载逻辑
-    const progress = {
-      bar: document.getElementById('progressBar'),
-      current: 0,
-      target: 0,
-      simulateSpeed: 2,
-      updateInterval: 50
-    };
-
-    const progressTimer = setInterval(() => {
-      if (progress.target < 80) {
-        progress.target += (80 - progress.target) * 0.15;
-        progress.bar.style.width = progress.target + '%';
-      }
-    }, progress.updateInterval);
-
-    window.addEventListener('load', () => {
-      progress.target = 100;
-      progress.bar.style.width = '100%';
-      clearInterval(progressTimer);
-
-      setTimeout(() => {
-        const loader = document.getElementById('loader');
-        const content = document.getElementById('original-content');
-        
-        loader.style.opacity = '0';
-        loader.addEventListener('transitionend', () => {
-          loader.style.display = 'none';
-          content.style.display = 'block';
-          content.style.opacity = '1';
-          
-          // 触发原有resize逻辑
-          setTimeout(resize, 100);
-        }, { once: true });
-      }, 500);
-    });
-
-    // 保持原有脚本不变
-    // ... [保留原有所有脚本内容] ...
+      // 初始资源追踪
+      elements.forEach(trackLoading);
+    })();
   </script>
+
+  <!-- 原有脚本 -->
+  <script type="module" crossorigin src="./assets/index-41daed13.js"></script>
+  <link rel="stylesheet" href="./assets/index-8fb46df7.css">
+  
+  <!-- 原有其他脚本内容... -->
 </body>
 </html>
