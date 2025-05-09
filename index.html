@@ -1,432 +1,162 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no">
-    <title>首页 | beimencangyun.github.io</title>
-    <link rel="shortcut icon" href="图标" type="https://beimencangyun.github.io/tubiao.ico">
-
-    <style>
-        body {
-            margin: 0;
-        }
-
-        .navbar {
-            overflow: hidden;
-            background-color: #1a1a1a;
-            position: fixed;
-            top: 0;
-            width: 100%;
-        }
-
-        .navbar a {
-            float: left;
-            display: block;
-            color: #f2f2f2;
-            text-align: center;
-            padding: 15px 26px;
-            text-decoration: none;
-            font-size: 17px;
-        }
-
-        .navbar a:hover {
-            background: #ddd;
-            color: #1a1a1a;
-        }
-
-        .main {
-            padding: 15px;
-            margin-top: 30px;
-            height: 1500px;
-        }
-
-        .href-color {
-
-            color: #48D1CC;
-
-        }
-
-        a.href-color:link,
-
-        a.href-color:hover {
-
-            color: #48D1CC;
-
-        }
-
-        .color2 {
-
-            color: #00d9ff;
-
-        }
-
-        a.href-color:link,
-
-        a.href-color:hover {
-
-            color: #48D1CC;
-
-        }
-
-        < !--上方为链接颜色调整-->.no-underline {
-            text-decoration: none;
-        }
-
-        < !--上方为链接下划线-->html,
-        body {
-
-            height: 100%;
-
-            margin: 0;
-
-            padding: 0;
-
-        }
-
-        .container {
-
-            display: flex;
-
-            flex-direction: column;
-
-            height: 100%;
-
-        }
-
-        .content {
-
-            flex-grow: 1;
-
-            padding: 20px;
-
-        }
-
-        .footer {
-
-            height: 280px;
-
-            background-color: #eaeaea;
-
-            padding: 20px;
-
-            text-align: center;
-
-            color: #333;
-
-        }
-    </style>
-
-
-
-    <style>
-        /* 加载容器样式 */
-        .loader-container {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: #fff;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            transition: opacity 0.5s;
-        }
-
-        .loading-text {
-            margin: 10px 0;
-            font-size: 1.2em;
-            color: #333;
-        }
-
-        /* 资源列表样式 */
-        .resource-list {
-            width: 300px;
-            height: 200px;
-            overflow-y: auto;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            padding: 10px;
-            margin: 10px 0;
-        }
-
-        .resource-item {
-            padding: 5px 0;
-            font-size: 0.9em;
-            color: #666;
-            display: flex;
-            align-items: center;
-        }
-
-        .resource-item::before {
-            content: '';
-            display: inline-block;
-            width: 12px;
-            height: 12px;
-            border-radius: 50%;
-            background: #3498db;
-            margin-right: 8px;
-            animation: pulse 1.5s infinite;
-        }
-
-        .resource-item.loaded::before {
-            background: #2ecc71;
-            animation: none;
-        }
-
-        /* 进度条样式 */
-        .progress-container {
-            width: 200px;
-            height: 10px;
-            background: #f0f0f0;
-            border-radius: 5px;
-            overflow: hidden;
-        }
-
-        .progress-bar {
-            width: 0%;
-            height: 100%;
-            background: #3498db;
-            transition: width 0.3s ease-out;
-        }
-
-        @keyframes pulse {
-            0% {
-                transform: scale(0.8);
-                opacity: 0.5;
-            }
-
-            50% {
-                transform: scale(1);
-                opacity: 1;
-            }
-
-            100% {
-                transform: scale(0.8);
-                opacity: 0.5;
-            }
-        }
-    </style>
-
-    <div class="navbar">
-        <a><img src="https://beimencangyun.github.io/tubiao.ico" width="20" height="20" alt="error 无法加载图片">
-            <a class="w3-bar-item w3-button" href="https://beimencangyun.github.io">首页</a>
-            <a class="w3-bar-item w3-button" href="https://beimencangyun.github.io/mc1.html">地图</a>
-            <a class="w3-bar-item w3-button" href="https://beimencangyun.github.io/gengduo.html">更多</a>
-    </div>
-
-
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=no">
+	<title>首页 | beimencangyun.github.io</title>
+	<link rel="shortcut icon" href="图标" type="https://beimencangyun.github.io/tubiao.ico">
+	<style>
+		.href-color {
+		
+		  color: #48D1CC;
+		
+		}
+		
+		  a.href-color:link,
+		
+		  a.href-color:hover {
+		
+		    color: #48D1CC;
+		
+		  }
+      
+      .color2 {
+		
+		  color: #00d9ff;
+		
+		}
+		
+		  a.href-color:link,
+		
+		  a.href-color:hover {
+		
+		    color: #48D1CC;
+		
+		  }
+		
+		<!--上方为链接颜色调整-->
+.no-underline {
+  text-decoration: none;
+}
+		<!--上方为链接下划线-->
+		  html, body {
+		
+		    height: 100%;
+		
+		    margin: 0;
+		
+		    padding: 0;
+		
+		  }
+		
+		  .container {
+		
+		    display: flex;
+		
+		    flex-direction: column;
+		
+		    height: 100%;
+		
+		  }
+		
+		  .content {
+		
+		    flex-grow: 1;
+		
+		    padding: 20px;
+		
+		  }
+		
+		  .footer {
+		
+		    height: 280px;
+		
+		    background-color: #eaeaea;
+		
+		    padding: 20px;
+		
+		    text-align: center;
+		
+		    color: #333;
+		
+		  }
+		
+	</style>
 </head>
 
+<!--分============================================隔============================================符-->
+<style>
+body {margin:0;}
+
+.navbar {
+  overflow: hidden;
+  background-color: #1a1a1a;
+  position: fixed;
+  top: 0;
+  width: 100%;
+}
+
+.navbar a {
+  float: left;
+  display: block;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 15px 26px;
+  text-decoration: none;
+  font-size: 17px;
+}
+
+.navbar a:hover {
+  background: #ddd;
+  color: #1a1a1a;
+}
+
+.main {
+  padding: 15px;
+  margin-top: 30px;
+  height: 1500px;
+}
+</style>
 <body>
-    <div class="loader-container" id="loader">
-        <div class="loading-text">网页正在加载中...</div>
-        <div class="resource-list" id="resourceList"></div>
-        <div class="progress-container">
-            <div class="progress-bar" id="progressBar"></div>
-        </div>
-    </div>
+<!--分============================================隔============================================符-->
+<div class="navbar">
+  <a><img src="https://beimencangyun.github.io/tubiao.ico" width="20" height="20" alt="error 无法加载图片">
+  <a class="w3-bar-item w3-button" href="https://beimencangyun.github.io">首页</a>
+  <a class="w3-bar-item w3-button" href="https://beimencangyun.github.io/mc1.html">地图</a>
+  <a class="w3-bar-item w3-button" href="https://beimencangyun.github.io/gengduo.html">更多</a>
+</div>
+<!--分============================================隔============================================符-->
+<body>
+	<div class="container">
+		<div class="content">
+        <!-- 页面内容 -->
+<p>‎‎‎‎</p>
+<p>‎‎‎‎</p>
+<h1>beimencangyun小站<h1>
+<p>首页<p/>		
+			<!-- 页面内容 -->
+		</div>
+		<div class="footer">
+			<!--分————隔————符-->
+			<p style="text-align: center;"><a href="https://space.bilibili.com/1587900578" target="_blank" rel="noopener" class="href-color" class="no-underline">BiliBili</a> <a href="https://github.com/beimencangyun" target="_blank" rel="noopener" class="href-color" class="no-underline">Github</a> <a href="https://discord.gg/c6yRPycuD6"
+					target="_blank" rel="noopener" class="href-color" class="no-underline">Discord</a> <a href="mailto:qwq@wuchenhaina.us.kg" target="_blank" rel="noopener" class="href-color" class="no-underline">Email</a></p>
+			<p style="text-align: center;">Copyright &copy; 2025 beimencangyun. All rights reserved.&nbsp;</p>
 
-    <div class="content" id="content">
-        <!-- 内容!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! -->
-        <p>‎‎‎‎</p>
-        <p>‎‎‎‎</p>
-        <h1>beimencangyun小站<h1>
-                <p>首页
-                    <p />
-                    <!-- 页面内容 -->
-    </div>
-    <div class="footer">
-        <!--分————隔————符-->
-        <p style="text-align: center;"><a href="https://space.bilibili.com/1587900578" target="_blank" rel="noopener" class="href-color" class="no-underline">BiliBili</a> <a href="https://github.com/beimencangyun" target="_blank" rel="noopener" class="href-color" class="no-underline">Github</a> <a href="https://discord.gg/c6yRPycuD6" target="_blank" rel="noopener" class="href-color" class="no-underline">Discord</a> <a href="mailto:qwq@wuchenhaina.us.kg" target="_blank" rel="noopener" class="href-color" class="no-underline">Email</a></p>
-        <p style="text-align: center;">Copyright &copy; 2025 beimencangyun. All rights reserved.&nbsp;</p>
-
-        <p><a href="https://icp.gov.moe/?keyword=20242225" target="_blank" class="href-color" rel="noopener" class="text-center" class="no-underline"><span style="color: #2b2b2b;">萌ICP备2225号</span></strong></a></p>
-        <a target="_blank" class="href-color" class="no-underline" href="https://beian.miit.cn.com/gov/search.php?query=" title="MIIT备20241061号">MIIT备20241061号</a>
-        <!--分————隔————符-->
-        <html>
-
-        <head>
-            <style>
-                .center-text {
-
-                    text-align: center;
-
-                }
-            </style>
-        </head>
-
-        <body>
-            <div class="center-text">
-                <p>本站已安全运行了<b><strong>
-                            <script language="JavaScript" type="text/javascript">
-                                var urodz = new Date("3/24/2024");
-                                var now = new Date();
-                                var ile = now.getTime() - urodz.getTime();
-                                var dni = Math.floor(ile / (1000 * 60 * 60 * 24));
-                                document.write(+dni)
-                            </script>
-                        </strong></b>天
-                    <p />
-            </div>
-        </body>
-    </div>
-    </div>
-
-
-
-
-
-
-
-
-    <script src="script.js"></script>
-    <link rel="stylesheet" href="styles.css">
-    </div>
-
-    <script>
-        class ResourceTracker {
-            constructor() {
-                this.resources = new Set();
-                this.loadedResources = new Set();
-                this.listElement = document.getElementById('resourceList');
-                this.observer = null;
-            }
-
-            startTracking() {
-                // 初始扫描
-                this.scanDOM();
-                // 设置动态资源监听
-                this.setupMutationObserver();
-                // 定时更新显示
-                setInterval(() => this.updateDisplay(), 500);
-            }
-
-            scanDOM() {
-                // 扫描各种资源
-                ['img', 'script', 'link', 'video', 'audio', 'iframe'].forEach(tag => {
-                    document.querySelectorAll(tag).forEach(element => {
-                        this.addResource(element);
-                    });
-                });
-            }
-
-            addResource(element) {
-                const src = element.src || element.href;
-                if (src && !this.resources.has(src)) {
-                    this.resources.add(src);
-                    this.setupResourceListeners(element);
-                }
-            }
-
-            setupResourceListeners(element) {
-                if (element.complete || element.readyState === 4) {
-                    this.loadedResources.add(element.src || element.href);
-                    return;
-                }
-
-                const onLoad = () => {
-                    this.loadedResources.add(element.src || element.href);
-                    element.removeEventListener('load', onLoad);
-                };
-
-                element.addEventListener('load', onLoad);
-                element.addEventListener('error', onLoad); // 错误也视为加载结束
-            }
-
-            setupMutationObserver() {
-                this.observer = new MutationObserver(mutations => {
-                    mutations.forEach(mutation => {
-                        mutation.addedNodes.forEach(node => {
-                            if (node.nodeType === 1) { // Element node
-                                this.scanNewElement(node);
-                            }
-                        });
-                    });
-                });
-
-                this.observer.observe(document, {
-                    childList: true,
-                    subtree: true
-                });
-            }
-
-            scanNewElement(element) {
-                ['img', 'script', 'link', 'video', 'audio', 'iframe'].forEach(tag => {
-                    if (element.tagName.toLowerCase() === tag) {
-                        this.addResource(element);
-                    }
-                    element.querySelectorAll(tag).forEach(child => {
-                        this.addResource(child);
-                    });
-                });
-            }
-
-            updateDisplay() {
-                const fragment = document.createDocumentFragment();
-
-                this.resources.forEach(src => {
-                    const item = document.createElement('div');
-                    item.className = `resource-item ${
-                        this.loadedResources.has(src) ? 'loaded' : ''
-                    }`;
-
-                    // 显示文件名
-                    const fileName = this.getFileName(src);
-                    item.textContent = fileName;
-
-                    // 添加文件类型图标
-                    const fileType = this.getFileType(src);
-                    item.dataset.type = fileType;
-
-                    fragment.appendChild(item);
-                });
-
-                this.listElement.innerHTML = '';
-                this.listElement.appendChild(fragment);
-            }
-
-            getFileName(src) {
-                try {
-                    const url = new URL(src, location.href);
-                    return url.pathname.split('/').pop() || src;
-                } catch {
-                    return src.split('/').pop() || src;
-                }
-            }
-
-            getFileType(src) {
-                const extension = src.split('.').pop().toLowerCase();
-                const typeMap = {
-                    jpg: 'image',
-                    jpeg: 'image',
-                    png: 'image',
-                    gif: 'image',
-                    js: 'script',
-                    css: 'style',
-                    html: 'document',
-                    mp4: 'video',
-                    webm: 'video',
-                    mp3: 'audio'
-                };
-                return typeMap[extension] || 'file';
-            }
-        }
-
-        // 初始化资源追踪
-        const tracker = new ResourceTracker();
-        tracker.startTracking();
-
-        // 原有进度条逻辑（根据实际情况调整）
-        window.addEventListener('load', () => {
-            // 加载完成后的处理
-            document.getElementById('loader').style.opacity = '0';
-            document.getElementById('content').classList.add('visible');
-        });
-    </script>
+<p><a href="https://icp.gov.moe/?keyword=20242225" target="_blank" class="href-color" rel="noopener" class="text-center" class="no-underline"><span style="color: #2b2b2b;">萌ICP备2225号</span></strong></a></p>
+<a target="_blank" class="href-color" class="no-underline" href="https://beian.miit.cn.com/gov/search.php?query=" title="MIIT备20241061号">MIIT备20241061号</a>
+			<!--分————隔————符-->
+			<html><head><style>
+					.center-text {
+					
+					    text-align: center;
+					
+					}
+					
+</style></head><body><div class="center-text">
+					<p>本站已安全运行了<b><strong>
+								<script language="JavaScript" type="text/javascript">
+									var urodz = new Date("3/24/2024");var now = new Date();var ile = now.getTime() - urodz.getTime();var dni = Math.floor(ile / (1000 * 60 * 60 * 24));document.write( + dni)
+								</script>
+							</strong></b>天
+<p /></div></body></div></div>
 </body>
-
 </html>
