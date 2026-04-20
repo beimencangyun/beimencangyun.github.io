@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>音频分割 · 保留原始参数 (FFmpeg.wasm)</title>
+    <title>音频分割 · 保留原始参数 (GitHub Pages 适配版)</title>
+    <!-- 补丁：启用跨域隔离 (必须在所有脚本之前加载) -->
+    <script src="coi-serviceworker.js"></script>
     <style>
-        /* 极简样式，仅保证可读 */
         body { font-family: system-ui, sans-serif; margin: 20px; background: #fff; color: #111; }
         .container { max-width: 760px; margin: 0 auto; }
         label, button, input, .status, .download-area { display: block; margin: 14px 0; }
@@ -15,22 +16,18 @@
         button:disabled { opacity: 0.5; cursor: not-allowed; }
         .status { background: #f4f4f4; padding: 10px 14px; border: 1px solid #ccc; min-height: 2.8em; word-break: break-word; }
         .download-area a { display: inline-block; margin-right: 22px; margin-bottom: 8px; }
-        .error-hint { color: #b00; background: #fee; padding: 8px; border-left: 3px solid #b00; margin: 12px 0; }
         .info-note { color: #444; font-size: 0.9rem; }
         code { background: #eee; padding: 2px 4px; }
-        hr { margin: 22px 0; border: 0.5px solid #ddd; }
     </style>
-    <!-- 使用官方 FFmpeg.wasm 0.12.10 (UMD) -->
+    <!-- 引入 FFmpeg.wasm 核心库 (使用 UMD 版本) -->
     <script src="https://cdn.jsdelivr.net/npm/@ffmpeg/ffmpeg@0.12.10/dist/umd/ffmpeg.min.js"></script>
 </head>
 <body>
 <div class="container">
-    <h2>✂️ 音频分割 (流复制 · 无损参数)</h2>
-    <p class="info-note">✔ 基于 FFmpeg.wasm，所有处理在本地完成，不上传。<br>
-    ✔ 使用 <code>-c copy</code> 保持原始码率/采样率/声道。<br>
-    ⚠️ 必须通过 <code>http://localhost</code> 或 HTTPS 访问，否则 SharedArrayBuffer 不可用。</p>
+    <h2>✂️ 音频分割 (流复制 · 无损参数) - GitHub Pages 版</h2>
+    <p class="info-note">✔ 已通过 coi-serviceworker 启用跨域隔离，可在 GitHub Pages 运行。</p>
 
-    <div id="ffmpegStatus" class="status">⏳ 正在初始化 FFmpeg 核心 (首次加载约30MB)……</div>
+    <div id="ffmpegStatus" class="status">⏳ 正在初始化 FFmpeg (首次加载约30MB)……</div>
     <button id="retryLoadBtn" style="display: none; background: #f0f0f0;">🔄 重新加载 FFmpeg</button>
 
     <label>📁 选择音频文件：</label>
@@ -44,7 +41,6 @@
     <div class="download-area" id="downloadLinks">
         <strong>📦 分割结果：</strong><br>
     </div>
-
     <hr>
     <div id="diagnosticBox" class="info-note"></div>
 </div>
@@ -67,7 +63,6 @@
         let isProcessing = false;
         let currentAudioFile = null;
 
-        // 辅助函数
         function setFFmpegStatus(text, isError = false) {
             ffmpegStatusDiv.textContent = text;
             ffmpegStatusDiv.style.background = isError ? '#fee' : '#f4f4f4';
@@ -92,7 +87,6 @@
             downloadDiv.appendChild(a);
         }
 
-        // 解析时长
         function parseDurationToSeconds(val) {
             const str = val.trim();
             if (!str) return NaN;
@@ -111,7 +105,6 @@
             return NaN;
         }
 
-        // 获取音频时长（浏览器辅助，非必须）
         async function getAudioDurationViaElement(file) {
             return new Promise((resolve) => {
                 const audio = new Audio();
@@ -130,23 +123,23 @@
             });
         }
 
-        // ---------- 初始化 FFmpeg (核心) ----------
+        // ---------- 加载 FFmpeg (已针对 GitHub Pages 优化) ----------
         async function loadFFmpeg() {
             try {
                 setFFmpegStatus('🔄 正在下载 FFmpeg 核心 (约30MB)，请耐心等待……', false);
                 retryLoadBtn.style.display = 'none';
                 
-                // 使用全局 FFmpeg 构造函数 (来自 UMD)
+                // 等待 coi-serviceworker 生效 (若需要)
+                if (window.crossOriginIsolated) {
+                    setDiagnostics('✔ 页面已成功跨域隔离 (crossOriginIsolated = true)');
+                } else {
+                    setDiagnostics('⏳ 正在等待跨域隔离生效...');
+                    // coi-serviceworker 通常会触发一次页面刷新，等待即可
+                }
+
                 const { FFmpeg } = FFmpegWASM;
                 ffmpeg = new FFmpeg();
                 
-                // 日志回调 (可用于调试，但为了简洁不打印过多)
-                ffmpeg.on('log', ({ message }) => {
-                    // 可打开注释查看详细日志
-                    // console.log('[ffmpeg]', message);
-                });
-                
-                // 加载核心 (指定官方稳定 CDN)
                 await ffmpeg.load({
                     coreURL: 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/umd/ffmpeg-core.js',
                 });
@@ -155,9 +148,9 @@
                 setFFmpegStatus('✅ FFmpeg 已就绪。请选择音频文件并设置分割时长。');
                 splitBtn.disabled = false;
                 splitBtn.textContent = '✂️ 开始分割';
-                setDiagnostics('✔ FFmpeg 核心加载成功。环境支持 SharedArrayBuffer。');
+                setDiagnostics('✔ FFmpeg 核心加载成功。');
             } catch (err) {
-                console.error('FFmpeg 加载失败:', err);
+                console.error(err);
                 ffmpegLoaded = false;
                 let errorMsg = err.message || '未知错误';
                 setFFmpegStatus(`❌ FFmpeg 初始化失败: ${errorMsg}`, true);
@@ -165,71 +158,44 @@
                 splitBtn.disabled = true;
                 splitBtn.textContent = 'FFmpeg 不可用';
                 
-                // 详细诊断信息
-                let diag = `❌ 加载失败。可能原因：<br>`;
-                if (!window.isSecureContext) {
-                    diag += `⚠️ 当前页面不是安全上下文 (非 HTTPS / localhost)。FFmpeg.wasm 需要 SharedArrayBuffer，必须使用 <code>https://</code> 或 <code>http://localhost</code> 访问。<br>`;
-                } else {
-                    diag += `✔ 安全上下文: 是。<br>`;
+                let diag = `❌ 加载失败。<br>`;
+                if (!window.crossOriginIsolated) {
+                    diag += `⚠️ 当前页面未跨域隔离。请确保 coi-serviceworker.js 文件与 HTML 在同一目录，并已正确加载。<br>`;
                 }
-                diag += `🛜 请检查网络是否能访问 CDN (jsdelivr.net)。如被屏蔽，可尝试科学上网或更换网络。<br>`;
-                diag += `📌 错误详情: ${errorMsg}`;
+                diag += `错误详情: ${errorMsg}`;
                 setDiagnostics(diag);
             }
         }
 
-        // 重试加载
-        retryLoadBtn.addEventListener('click', () => {
-            loadFFmpeg();
-        });
-
-        // 页面启动即加载
+        retryLoadBtn.addEventListener('click', loadFFmpeg);
         loadFFmpeg();
 
-        // 检查安全上下文并提示
-        if (!window.isSecureContext) {
-            setDiagnostics('⚠️ 当前页面非安全上下文，FFmpeg 将无法运行。请通过 localhost 或 HTTPS 打开。');
-        }
-
-        // 文件选择：显示时长信息（辅助）
         fileInput.addEventListener('change', async (e) => {
             const file = fileInput.files[0];
-            if (!file) {
-                currentAudioFile = null;
-                return;
-            }
+            if (!file) { currentAudioFile = null; return; }
             currentAudioFile = file;
             const dur = await getAudioDurationViaElement(file);
             if (dur > 0) {
-                const h = Math.floor(dur / 3600);
-                const m = Math.floor((dur % 3600) / 60);
-                const s = (dur % 60).toFixed(2);
-                setDiagnostics(`📁 已选择: ${file.name} | 时长约 ${h}:${m.toString().padStart(2,'0')}:${s.padStart(5,'0')} (仅供参考)`);
+                const m = Math.floor(dur / 60);
+                const s = (dur % 60).toFixed(1);
+                setDiagnostics(`📁 ${file.name} | 时长约 ${m}:${s.padStart(4,'0')}`);
             } else {
-                setDiagnostics(`📁 已选择: ${file.name} | 无法通过浏览器读取时长，但分割仍可正常进行。`);
+                setDiagnostics(`📁 ${file.name} (时长未知，分割仍可进行)`);
             }
         });
 
-        // ---------- 分割按钮逻辑 (使用 segment muxer) ----------
         splitBtn.addEventListener('click', async () => {
             if (!ffmpegLoaded || !ffmpeg) {
-                setFFmpegStatus('❌ FFmpeg 未就绪，无法分割。', true);
+                setFFmpegStatus('❌ FFmpeg 未就绪。', true);
                 return;
             }
-            if (isProcessing) {
-                setFFmpegStatus('⏳ 正在处理中，请稍候……', false);
-                return;
-            }
+            if (isProcessing) return;
             const file = currentAudioFile;
-            if (!file) {
-                setFFmpegStatus('❌ 请先选择一个音频文件。', true);
-                return;
-            }
+            if (!file) { setFFmpegStatus('❌ 请先选择音频文件。', true); return; }
 
-            const segStr = durationInput.value.trim();
-            const segmentSec = parseDurationToSeconds(segStr);
-            if (isNaN(segmentSec) || segmentSec <= 0) {
-                setFFmpegStatus('❌ 分割时长无效，请输入正数秒或 HH:MM:SS', true);
+            const segSec = parseDurationToSeconds(durationInput.value.trim());
+            if (isNaN(segSec) || segSec <= 0) {
+                setFFmpegStatus('❌ 分割时长无效', true);
                 return;
             }
 
@@ -237,7 +203,7 @@
             isProcessing = true;
             splitBtn.disabled = true;
             splitBtn.textContent = '⏳ 处理中...';
-            setFFmpegStatus('📤 读取音频文件并写入虚拟文件系统……', false);
+            setFFmpegStatus('📤 读取音频并写入虚拟文件系统……', false);
 
             const originalName = file.name;
             const baseName = originalName.replace(/\.[^/.]+$/, "");
@@ -249,43 +215,34 @@
                 const fileData = await file.arrayBuffer();
                 await ffmpeg.writeFile(inputFileName, new Uint8Array(fileData));
                 
-                setFFmpegStatus(`⚙️ 开始流复制分段 (segment_time=${segmentSec}s) ……`, false);
-                
+                setFFmpegStatus(`⚙️ 流复制分段 (segment_time=${segSec}s) ……`, false);
                 const outputPattern = `part_%03d.${ext}`;
                 
-                // 使用 segment muxer 一次命令完成分割，保留全部参数
                 await ffmpeg.exec([
                     '-i', inputFileName,
                     '-map', '0:a',
-                    '-c', 'copy',                // 流复制，无损
+                    '-c', 'copy',
                     '-f', 'segment',
-                    '-segment_time', segmentSec.toString(),
+                    '-segment_time', segSec.toString(),
                     '-reset_timestamps', '1',
                     outputPattern
                 ]);
                 
-                setFFmpegStatus('📦 分段完成，读取生成的文件……', false);
-                
+                setFFmpegStatus('📦 分段完成，生成下载链接……', false);
                 const files = await ffmpeg.listDir('/');
                 const partFiles = files.filter(f => f.name.startsWith('part_') && f.name.endsWith(`.${ext}`) && !f.isDir);
                 
-                if (partFiles.length === 0) {
-                    throw new Error('未生成任何分段，可能音频太短或格式不支持');
-                }
-                
+                if (partFiles.length === 0) throw new Error('未生成分段');
                 partFiles.sort((a,b) => a.name.localeCompare(b.name));
                 
                 for (let i=0; i<partFiles.length; i++) {
                     const pf = partFiles[i];
                     const data = await ffmpeg.readFile(pf.name);
                     const blob = new Blob([data.buffer], { type: file.type || 'audio/mpeg' });
-                    const downName = `${baseName}_part${i+1}.${ext}`;
-                    addDownloadLink(blob, downName);
+                    addDownloadLink(blob, `${baseName}_part${i+1}.${ext}`);
                 }
                 
                 setFFmpegStatus(`✅ 分割完成！共 ${partFiles.length} 个片段。`, false);
-                
-                // 清理虚拟文件
                 await ffmpeg.deleteFile(inputFileName);
                 for (const pf of partFiles) await ffmpeg.deleteFile(pf.name);
                 
@@ -300,10 +257,6 @@
             }
         });
 
-        // 附加说明：如果SharedArrayBuffer未启用，FFmpeg会失败。提醒用户使用本地服务器。
-        if (!window.crossOriginIsolated) {
-            setDiagnostics(prev => prev + '<br>⚠️ 当前未启用跨域隔离 (crossOriginIsolated=false)，可能导致 SharedArrayBuffer 不可用。请确保服务器配置了相应头部，或使用 localhost。');
-        }
     })();
 </script>
 </body>
